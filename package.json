@@ -6,7 +6,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "prompt-sync": "^4.2.0",
-    "ibm-watson": "^6.8.0",
+    "ibm-watson": "^8.0.0",
     "uuid": "^8.3.2"
   },
   "scripts": {
