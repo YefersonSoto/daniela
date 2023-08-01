@@ -1,0 +1,17 @@
+{
+  "name": "my-assistant-app",
+  "version": "1.0.0",
+  "description": "An application using IBM Watson Assistant API",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "prompt-sync": "^4.2.0",
+    "ibm-watson": "^6.8.0",
+    "uuid": "^8.3.2"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
