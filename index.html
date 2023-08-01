@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Avatar Demo</title>
+  <style>
+    /* Default styles */
+    body {
+      background-image: url("image1.png");
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+    .chat-container {
+      position: absolute;
+      top: 150px;
+      right: 460px;
+      width: 320px;
+      max-height: 480px;
+      background-color: #F8F8F8;
+      padding: 8px;
+      border-radius: 9px;
+      overflow-y: auto;
+    }
+    /* Responsive styles */
+    @media screen and (max-width: 768px) {
+      body {
+        background-size: contain;
+      }
+      .chat-container {
+        position: static;
+        width: 100%;
+        margin-top: 20px;
+        margin-right: 20px;
+      }
+    }
+    /* Rest of the styles */
+    .chat-bubble {
+      background-color: #C1C1C1;
+      color: black;
+      padding: 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      margin-right: 10px;
+      display: inline-block;
+      text-align: right;
+    }
+    .user-bubble {
+      background-color: white;
+      color: black;
+      padding: 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      margin-right: 10px;
+      display: inline-block;
+      text-align: left;
+    }
+    .white-bubble {
+      background-color: #F8F8F8;
+      color: white;
+      padding: 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      margin-right: 10px;
+      display: inline-block;
+      text-align: left;
+    }
+    .chat-container p {
+      margin: 0;
+      font-family: "Roboto", sans-serif;
+      color: #4B0082;
+    }
+    .user-bubble-container {
+      text-align: left;
+    }
+    .chatbot-bubble-container {
+      text-align: right;
+      background-color: #F8F8F8;
+      color: white;
+      padding: 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      margin-right: 10px;
+      display: inline-block;
+      text-align: right;
+    }
+    .avatar-image {
+      top: -20px;
+      right: -20px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+    .chat-container::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js"></script>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1 class="chat-title" style="font-size: 24px; color: #4B0082; font-weight: bold; font-family: 'Roboto', sans-serif;">Soy Daniela, tu asistente virtual. ¡Habla conmigo!</h1>
+
+      <span class="chat-minimize" onclick="minimizeChat()">-</span>
+    </div>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="Escribe tu Mensaje Aquí" />
+    <button id="sendButton">Enviar</button>
+  </div>
+
+  <script>
+    const chatbox = document.getElementById('chatbox');
+    const userInput = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+
+    // Event listener for the send button
+    sendButton.addEventListener('click', sendMessage);
+
+    // Event listener for the user input field
+    userInput.addEventListener('keydown', function(event) {
+      if (event.keyCode === 13) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Function to send a message to the chatbot
+    function sendMessage() {
+      const message = userInput.value.trim();
+      if (message !== '') {
+        displayUserMessage('Tu: ' + message);
+        userInput.value = '';
+
+        // Make an HTTP POST request to the server-side code
+        axios.post('/chat', { message })
+          .then(response => {
+            const reply = response.data.reply;
+            displayChatbotMessage('Daniela: ' + reply);
+
+            // Speak the reply using SitePal
+            sayText(reply,3, 2, 4);
+          })
+          .catch(error => {
+            console.error(error);
+            displayChatbotMessage('Un error ha ocurrido, intentelo nuevamente.');
+          });
+      }
+    }
+
+    // Function to display a user message in the chatbox
+    function displayUserMessage(message) {
+      const messageElement = document.createElement('p');
+      messageElement.classList.add('user-bubble');
+      messageElement.textContent = message;
+
+      const messageContainer = document.createElement('div');
+      messageContainer.classList.add('user-bubble-container');
+      messageContainer.appendChild(messageElement);
+
+      chatbox.appendChild(messageContainer);
+      createWhiteBubble();
+    }
+
+    // Function to display a chatbot message in the chatbox
+    function displayChatbotMessage(message) {
+      const messageElement = document.createElement('p');
+      messageElement.classList.add('chat-bubble');
+
+      // Check if the message contains a link
+      if (message.includes('<a')) {
+        const tempElement = document.createElement('span');
+        tempElement.innerHTML = message;
+        const linkElement = tempElement.querySelector('a');
+
+        // Extract the link URL
+        const linkUrl = linkElement.href;
+
+        // Create a new clickable link element
+        const clickableLinkElement = document.createElement('a');
+        clickableLinkElement.href = linkUrl;
+        clickableLinkElement.textContent = linkElement.textContent;
+        clickableLinkElement.target = '_blank';
+
+        // Append the clickable link to the message element
+        messageElement.appendChild(clickableLinkElement);
+
+        // Create a separate bubble for the conversation with the link
+        const conversationMessageElement = document.createElement('p');
+        conversationMessageElement.classList.add('chat-bubble');
+        conversationMessageElement.innerHTML = message.substring(0, message.indexOf('<a'));
+
+        const conversationContainer = document.createElement('div');
+        conversationContainer.classList.add('chatbot-bubble-container');
+        conversationContainer.appendChild(conversationMessageElement);
+        const avatarImage = document.createElement('img');
+        avatarImage.src = 'Daniela.png';
+        avatarImage.alt = 'Avatar';
+        avatarImage.classList.add('avatar-image');
+        conversationContainer.appendChild(avatarImage);
+        chatbox.appendChild(conversationContainer);
+        sayText(message.substring(0, message.indexOf('<a')).replace('Daniela: ', ''),3, 2, 4);
+
+        // Add a delay before displaying the second bubble
+        setTimeout(() => {
+          const linkContainer = document.createElement('div');
+          linkContainer.classList.add('chatbot-bubble-container');
+          linkContainer.appendChild(messageElement);
+          chatbox.appendChild(linkContainer);
+          createWhiteBubble();
+
+          // Get the text without the link
+          const textWithoutLink = message.replace('<a', '').replace('</a>', '');
+          if (textWithoutLink.trim() !== '') {
+            // Speak the text without the link using SitePal
+             
+          }
+        }, 2000); // Adjust the delay (in milliseconds) as needed
+      } else {
+        // If the message doesn't contain a link, display it as plain text
+        messageElement.textContent = message;
+
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('chatbot-bubble-container');
+        messageContainer.appendChild(messageElement);
+
+        const avatarImage = document.createElement('img');
+        avatarImage.src = 'Daniela.png';
+        avatarImage.alt = 'Avatar';
+        avatarImage.classList.add('avatar-image');
+        messageContainer.appendChild(avatarImage);
+
+        chatbox.appendChild(messageContainer);
+        createWhiteBubble();
+      }
+    }
+
+    // Function to create a white bubble
+    function createWhiteBubble() {
+      const whiteBubbleElement = document.createElement('p');
+      whiteBubbleElement.classList.add('white-bubble');
+
+      const whiteBubbleContainer = document.createElement('div');
+      whiteBubbleContainer.appendChild(whiteBubbleElement);
+
+      chatbox.appendChild(whiteBubbleContainer);
+    }
+    function minimizeChat() {
+      const chatContainer = document.querySelector('.chat-container');
+      chatContainer.style.display = 'none';
+    }
+  </script>
+</body>
+<script type="text/javascript" src="//vhss-d.oddcast.com/vhost_embed_functions_v4.php?acc=8721234&js=0"></script>
+<script type="text/javascript">
+  AC_VHost_Embed(8721234,720,580,"",1,1,2760659,0,1,0,"zX06AHOpct3S9Hv3EWdKRLizXaFugVmh",0,0);
+  function vh_sceneLoaded() {
+    // The scene begins playing, add actions here
+  }
+</script>
+</html>
