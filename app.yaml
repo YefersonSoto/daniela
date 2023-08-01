@@ -1,0 +1,30 @@
+runtime: nodejs14
+entrypoint: node appBackup.js
+ 
+
+handlers:
+  - url: /assets
+    static_dir: assets
+
+ 
+
+  - url: /appBackup.js
+    static_files: appBackup.js
+    upload: appBackup.js
+
+ 
+
+  - url: /(.*\.(css|js|gif|png|jpg))$
+    static_files: \1
+    upload: (.*\.(css|js|gif|png|jpg))$
+
+ 
+
+  - url: /
+    static_files: index.html
+    upload: index.html
+
+ 
+
+  - url: /.*
+    script: auto
