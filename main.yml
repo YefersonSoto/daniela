@@ -1,0 +1,26 @@
+version: 1
+frontend:
+  phases:
+    build:
+      commands:
+        - npm install  # Install frontend dependencies
+        - npm run build  # Build the frontend
+  artifacts:
+    baseDirectory: /
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/  # Cache frontend dependencies to speed up future builds
+backend:
+  phases:
+    build:
+      commands:
+        - npm install  # Install backend dependencies (if any)
+  artifacts:
+    baseDirectory: /
+    files:
+      - appBackup.js  # Include your Node.js server file
+  cache:
+    paths:
+      - node_modules/  # Cache backend dependencies to speed up future builds
